@@ -1,0 +1,21 @@
+CC:=mpic++ #$(HOME)/soft_install/bin/mpic++
+LDFLAGS:=
+CFLAGS:=-std=c++11 -I. -I./sparseTest
+
+EXE_NAME:=allreduce-test
+SRC:=$(wildcard *.cpp test/*.cpp sparseTest/*.cpp)
+# CU_SRC:=$(wildcard *.cu)
+OBJS:=$(SRC:.cpp=.o) #$(CU_SRC:.cu=.o)
+
+all: $(EXE_NAME)
+
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) $< -o $@
+$(EXE_NAME): $(OBJS)
+	$(CC) -o $(EXE_NAME) $(LDFLAGS) $^ $(LDFLAGS)
+
+test: $(EXE_NAME)
+	$(EXE_NAME)
+
+clean:
+	rm -f *.o test/*.o $(EXE_NAME) 
