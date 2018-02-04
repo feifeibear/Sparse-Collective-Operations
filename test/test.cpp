@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 
-void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterations) {
+void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterations, const float sparseRatio) {
     // Initialize on CPU (no GPU device ID).
     InitCollectives(NO_DEVICE);
 
@@ -26,7 +26,7 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
         auto iters = iterations[i];
 
         std::vector<float> denseData;
-        GenerateDenseArray(size, 0.1, denseData, mpi_rank);
+        GenerateDenseArray(size, sparseRatio, denseData, mpi_rank);
         float sparse_seconds = 0.0f, dense_seconds = 0.0f;
         for(size_t iter = 0; iter < iters; iter++) {
             timer.start();
@@ -92,11 +92,12 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
 
 // Test program for baidu-allreduce collectives, should be run using `mpirun`.
 int main(int argc, char** argv) {
-    if(argc != 2) {
-        std::cerr << "Usage: ./allreduce-test (cpu|gpu)" << std::endl;
+    if(argc != 3) {
+        std::cerr << "Usage: ./allreduce-test (cpu|gpu) sparseRatio" << std::endl;
         return 1;
     }
     std::string input(argv[1]);
+    float sparseRatio = stof(argv[2]);
 
     // Buffer sizes used for tests.
     std::vector<size_t> buffer_sizes = {
@@ -112,7 +113,7 @@ int main(int argc, char** argv) {
 
     // Test on either CPU and GPU.
     if(input == "cpu") {
-        TestMPIAllreduceCPU(buffer_sizes, iterations);
+        TestMPIAllreduceCPU(buffer_sizes, iterations, sparseRatio);
         //TestCollectivesCPU(buffer_sizes, iterations);
     } else if(input == "gpu") {
     } else {
