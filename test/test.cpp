@@ -17,6 +17,7 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
     if(MPI_Comm_size(MPI_COMM_WORLD, &mpi_size) != MPI_SUCCESS)
         throw std::runtime_error("MPI_Comm_size failed with an error");
     timer::Timer timer;
+    timer::Timer timer2;
 
     int mpi_rank;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank) != MPI_SUCCESS)
@@ -27,7 +28,7 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
 
         std::vector<float> denseData;
         GenerateDenseArray(size, sparseRatio, denseData, mpi_rank);
-        float sparse_seconds = 0.0f, dense_seconds = 0.0f;
+        float sparse_seconds = 0.0f, sparse_comm_seconds = 0.0f, dense_seconds = 0.0f;
         for(size_t iter = 0; iter < iters; iter++) {
             timer.start();
 
@@ -40,10 +41,12 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
             std::vector<float> sparseOutputData;
             std::vector<int> sparseOutputIdx;
 
+            timer2.start();
             if(!sparseData.empty())
               SparseTreeAllreduce(sparseData, sparseIdx, sparseOutputData, sparseOutputIdx);
             else
               std::cout << "data is empty, no all reduce" << std::endl;
+            sparse_comm_seconds += timer2.seconds();
 
 
             //transfer sparse to dense
@@ -80,6 +83,8 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
                 << size
                 << " ( sparse : "
                 << sparse_seconds / iters
+                << " , sparse comm. : "
+                << sparse_comm_seconds / iters
                 << " , dense : "
                 << dense_seconds / iters
                 << " per iteration)" << std::endl;
