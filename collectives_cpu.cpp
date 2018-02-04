@@ -200,15 +200,22 @@ void SparseTreeAllreduce(const vector<float>& input_data, const vector<int> &inp
 
     MPI_Status recv_status;
     MPI_Request recv_req;
+    double starttime, endtime;
 
     //init copy : input -> buffer
     vector<float> buffer_data(input_data);
     vector<int> buffer_idx(input_index);
+#ifdef TIMER
+    double add_time = 0.0f, reduce_time = 0.0f, bcast_time = 0.0f;
+#endif
 
     //reduce
     for(int step = size/2; step >= 1; step /= 2) {
       //sending processes : send buffer
       if(rank >= step && rank < step*2) {
+#ifdef TIMER
+        starttime = MPI_Wtime();
+#endif
         int send_to = rank - step;
         int send_length = buffer_data.size();
         MPI_Send(&send_length, 1, MPI_INT, send_to, 0, MPI_COMM_WORLD);
@@ -216,10 +223,16 @@ void SparseTreeAllreduce(const vector<float>& input_data, const vector<int> &inp
                 MPI_FLOAT, send_to, 0, MPI_COMM_WORLD);
         MPI_Send(&buffer_idx[0], send_length,
                 MPI_INT, send_to, 0, MPI_COMM_WORLD);
-
+#ifdef TIMER
+        endtime   = MPI_Wtime();
+        reduce_time += endtime - starttime;
+#endif
       }
       //recving processes : recv to recv_buff, reduce to buffer
       if(rank < step) {
+#ifdef TIMER
+        starttime = MPI_Wtime();
+#endif
         int recv_from = rank + step;
         int send_length = 0;
         MPI_Recv(&send_length, 1, MPI_INT, recv_from, 0, MPI_COMM_WORLD, &recv_status);
@@ -229,9 +242,22 @@ void SparseTreeAllreduce(const vector<float>& input_data, const vector<int> &inp
                 MPI_FLOAT, recv_from, 0, MPI_COMM_WORLD, &recv_status);
         MPI_Recv(&recv_buffer_idx[0], send_length,
                 MPI_INT, recv_from, 0, MPI_COMM_WORLD, &recv_status);
+#ifdef TIMER
+        endtime   = MPI_Wtime();
+        reduce_time += endtime - starttime;
+
+        starttime = MPI_Wtime();
+#endif
         sparseReduce(buffer_data, buffer_idx, recv_buffer_data, recv_buffer_idx);
+#ifdef TIMER
+        endtime   = MPI_Wtime();
+        add_time += endtime - starttime;
+#endif
       }
     }
+#ifdef TIMER
+    starttime = MPI_Wtime();
+#endif
     //Proc 0 : store buffer -> output_data
     //bcast output from Proc 0
     int finial_length = buffer_data.size();
@@ -246,9 +272,12 @@ void SparseTreeAllreduce(const vector<float>& input_data, const vector<int> &inp
     }
 
     MPI_Bcast(&output_data[0], finial_length, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Bcast(&output_idx[0], finial_length, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
+#ifdef TIMER
+    endtime   = MPI_Wtime();
+    bcast_time += endtime - starttime;
+    std::cout << "rank " << rank << " reduce_time " << reduce_time << " ,add_time " << add_time << " ,bcast_time " << bcast_time << std::endl;
+#endif
 
     //gather
     //for(int step = 1; step <= size/2; step *= 2) {

@@ -64,6 +64,7 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
             MPI_Allreduce(&denseData[0], &denseOutputRef[0], denseData.size(),
                 MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
             dense_seconds += timer.seconds();
+            return;
             // Check that we get the expected result.
             //if(1 || mpi_rank == 0) {
             //  std::cout<<"----output result------"<<std::endl;
@@ -106,7 +107,7 @@ int main(int argc, char** argv) {
 
     // Buffer sizes used for tests.
     std::vector<size_t> buffer_sizes = {
-        32, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 8388608, 67108864, 536870912
+        65536, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 8388608, 67108864, 536870912
     };
 
     // Number of iterations to run for each buffer size.

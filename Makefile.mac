@@ -1,6 +1,6 @@
 CC:=mpic++ #$(HOME)/soft_install/bin/mpic++
 LDFLAGS:=
-CFLAGS:=-std=c++11 -I. -I./sparseTest
+CFLAGS:=-std=c++11 -I. -I./sparseTest -DTIMER
 
 EXE_NAME:=allreduce-test
 SRC:=$(wildcard *.cpp test/*.cpp sparseTest/*.cpp)
