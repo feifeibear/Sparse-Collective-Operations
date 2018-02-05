@@ -71,7 +71,7 @@ std::vector<size_t> AllgatherInputLengths(int size, size_t this_rank_length) {
   * AllReduce with latency efficient way
   * T = logP(alpha + n*beta) 
   ***/
-void TreeAllreduce(float* data, size_t length, float** output_ptr) {
+void TreeAllreduce(float* data, size_t length, float* output) {
     // Get MPI size and rank.
     int rank;
     int mpi_error = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -93,8 +93,8 @@ void TreeAllreduce(float* data, size_t length, float** output_ptr) {
     //TODO only work for log2
     // Allocate the output buffer.
     float* buffer = alloc(length);
-    float* output = alloc(length);
-    *output_ptr =  output;
+    //float* output = alloc(length);
+    //output_ptr =  output;
 
     MPI_Status recv_status;
     MPI_Request recv_req;
@@ -119,6 +119,7 @@ void TreeAllreduce(float* data, size_t length, float** output_ptr) {
         reduce(output, buffer, length);
       }
     }
+    std::cout << "finish reduce" << std::endl;
     //gather
     for(int step = 1; step <= size/2; step *= 2) {
       //recv

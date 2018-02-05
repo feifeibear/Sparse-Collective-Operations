@@ -61,10 +61,10 @@ void TestMPIAllreduceCPU(std::vector<size_t>& sizes, std::vector<size_t>& iterat
             //                  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
             timer.start();
             std::vector<float> denseOutputRef(denseData.size(), 0);
-            MPI_Allreduce(&denseData[0], &denseOutputRef[0], denseData.size(),
-                MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+            //MPI_Allreduce(&denseData[0], &denseOutputRef[0], denseData.size(),
+            //    MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+            TreeAllreduce(&denseData[0], denseData.size(), &denseOutputRef[0]);
             dense_seconds += timer.seconds();
-            return;
             // Check that we get the expected result.
             //if(1 || mpi_rank == 0) {
             //  std::cout<<"----output result------"<<std::endl;
@@ -112,9 +112,12 @@ int main(int argc, char** argv) {
 
     // Number of iterations to run for each buffer size.
     std::vector<size_t> iterations = {
-        100000, 100000, 100000, 100000,
-        1000, 1000, 1000, 1000,
-        100, 50, 10, 1
+        //100000, 100000, 100000, 100000,
+        //1000, 1000, 1000, 1000,
+        //100, 50, 10, 1
+        1, 1, 1, 1,
+        1, 1, 1, 1,
+        1, 1, 1, 1
     };
 
     // Test on either CPU and GPU.

@@ -23,7 +23,7 @@ using namespace std;
 // device should be used. All data passed to other functions must be on that device.
 void InitCollectives(int device);
 
-void TreeAllreduce(float* data, size_t length, float** output_ptr);
+void TreeAllreduce(float* data, size_t length, float* output_ptr);
 
 void SparseTreeAllreduce(const vector<float>& data, const vector<int> &index, vector<float>& output_data, vector<int>& output_idx);
 #endif /* ifndef BAIDU_ALLREDUCE_COLLECTIVES_H_ */
