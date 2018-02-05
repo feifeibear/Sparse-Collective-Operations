@@ -145,38 +145,58 @@ void TreeAllreduce(float* data, size_t length, float* output) {
 void sparseReduce(vector<float>& dst_data, vector<int>& dst_idx, const vector<float>& src_data, const vector<int>& src_idx) {
     // Accumulate values from `src` into `dst` on the CPU.
     int i = 0, j = 0;
-    vector<float> res_data;
-    vector<int> res_idx;
     int dst_size = dst_data.size();
     int src_size = src_data.size();
+    vector<float> res_data(dst_size + src_size);
+    vector<int> res_idx(dst_size + src_size);
+    int pos = 0;
+    //vector<float>::iterator data_iter = res_data.begin();
+    //vector<int>::iterator idx_iter = res_idx.begin();
     while(i < dst_size && j < src_size) {
       if(dst_idx[i] < src_idx[j]) {
-        res_data.push_back(dst_data[i]);
-        res_idx.push_back(dst_idx[i]);
+        //res_data.push_back(dst_data[i]);
+        //res_idx.push_back(dst_idx[i]);
+        res_data[pos] = dst_data[i];
+        res_idx[pos] = dst_idx[i];
+        pos++;
         i++;
       } else if (dst_idx[i] == src_idx[j]) {
-        res_data.push_back(dst_data[i] + src_data[j]);
-        res_idx.push_back(dst_idx[i]);
+        //res_data.push_back(dst_data[i] + src_data[j]);
+        //res_idx.push_back(dst_idx[i]);
+        res_data[pos] = dst_data[i] + src_data[j];
+        res_idx[pos] = dst_idx[i];
+        pos++;
         i++;
         j++;
       } else {
-        res_data.push_back(src_data[j]);
-        res_idx.push_back(src_idx[j]);
+        //res_data.push_back(src_data[j]);
+        //res_idx.push_back(src_idx[j]);
+        res_data[pos] = src_data[j];
+        res_idx[pos] = src_idx[j];
+        pos++;
         j++;
       }
     }
     while(i < dst_size) {
-      res_idx.push_back(dst_idx[i]);
-      res_data.push_back(dst_data[i]);
+      //res_idx.push_back(dst_idx[i]);
+      //res_data.push_back(dst_data[i]);
+      res_idx[pos] = (dst_idx[i]);
+      res_data[pos] = (dst_data[i]);
+      pos++;
       i++;
     }
     while(j < src_size) {
-      res_idx.push_back(src_idx[j]);
-      res_data.push_back(src_data[j]);
+      //res_idx.push_back(src_idx[j]);
+      //res_data.push_back(src_data[j]);
+      res_idx[pos] = (src_idx[j]);
+      res_data[pos] = (src_data[j]);
+      pos++;
       j++;
     }
-    dst_data.assign(res_data.begin(), res_data.end());
-    dst_idx.assign(res_idx.begin(), res_idx.end());
+    //dst_data.assign(res_data.begin(), res_data.end());
+    //dst_idx.assign(res_idx.begin(), res_idx.end());
+    dst_data.assign(res_data.begin(), res_data.begin() + pos);
+    dst_idx.assign(res_idx.begin(), res_idx.begin() + pos);
 
     return;
 }
